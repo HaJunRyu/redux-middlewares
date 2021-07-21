@@ -7,14 +7,29 @@ import { createStore, applyMiddleware } from 'redux';
 import rootReducer from './modules';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import ReduxThunk from 'redux-thunk';
+import { Router } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 
-const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(ReduxThunk)));
+const customHistory = createBrowserHistory();
+
+const store = createStore(
+  rootReducer,
+  composeWithDevTools(
+    applyMiddleware(
+      ReduxThunk.withExtraArgument({
+        history: customHistory,
+      })
+    )
+  )
+);
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <Router history={customHistory}>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

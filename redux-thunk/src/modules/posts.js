@@ -20,21 +20,60 @@ export const getPosts = () => async dispatch => {
 };
 
 export const getPostById = id => async dispatch => {
-  dispatch({ type: GET_POST_BY_ID });
+  dispatch({ type: GET_POST_BY_ID, meta: id });
   try {
     const post = await postsAPI.getPostById(id);
-    dispatch({ type: GET_POST_BY_ID_SUCCESS, payload: { post } });
+    dispatch({
+      type: GET_POST_BY_ID_SUCCESS,
+      payload: { post },
+      meta: id,
+    });
   } catch (error) {
-    dispatch({ type: GET_POST_BY_ID_ERROR, payload: { error } });
+    dispatch({
+      type: GET_POST_BY_ID_ERROR,
+      payload: { error },
+      error: true,
+      meta: id,
+    });
   }
 };
 
+export const goToHome =
+  () =>
+  (dispatch, getState, { history }) => {
+    history.push('/');
+  };
+
 const initialState = {
   posts: reducerUtils.initial(),
-  post: reducerUtils.initial(),
+  post: {},
+};
+
+const getPostReducer = (state, action) => {
+  const id = action.meta;
+  switch (action.type) {
+    case GET_POST_BY_ID:
+      return {
+        ...state,
+        post: { ...state.post, [id]: reducerUtils.loading(state.post[id]?.data) },
+      };
+    case GET_POST_BY_ID_SUCCESS:
+      return {
+        ...state,
+        post: { ...state.post, [id]: reducerUtils.success(action.payload.post) },
+      };
+    case GET_POST_BY_ID_ERROR:
+      return {
+        ...state,
+        post: { ...state.post, [id]: reducerUtils.error(action.payload.error) },
+      };
+    default:
+      return state;
+  }
 };
 
 export default function postsReducer(state = initialState, action) {
+  const id = action?.meta;
   switch (action.type) {
     case GET_POSTS:
       return {
@@ -54,17 +93,17 @@ export default function postsReducer(state = initialState, action) {
     case GET_POST_BY_ID:
       return {
         ...state,
-        post: reducerUtils.loading(state.post.data),
+        post: { ...state.post, [id]: reducerUtils.loading(state.post[id]?.data) },
       };
     case GET_POST_BY_ID_SUCCESS:
       return {
         ...state,
-        post: reducerUtils.success(action.payload.post),
+        post: { ...state.post, [id]: reducerUtils.success(action.payload.post) },
       };
     case GET_POST_BY_ID_ERROR:
       return {
         ...state,
-        post: reducerUtils.error(action.payload.error),
+        post: { ...state.post, [id]: reducerUtils.error(action.payload.error) },
       };
     default:
       return state;
