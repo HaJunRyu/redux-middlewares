@@ -1,6 +1,6 @@
 import * as postsAPI from '../api/posts';
 import { reducerUtils } from '../lib/asyncUtils';
-import { call, put, takeEvery, getContext } from 'redux-saga/effects';
+import { call, put, takeEvery, getContext, select } from 'redux-saga/effects';
 
 const GET_POSTS = 'GET_POSTS';
 const GET_POSTS_SUCCESS = 'GET_POSTS_SUCCESS';
@@ -11,11 +11,13 @@ const GET_POST_BY_ID_SUCCESS = 'GET_POST_BY_ID_SUCCESS';
 const GET_POST_BY_ID_ERROR = 'GET_POST_BY_ID_ERROR';
 
 const GO_TO_HOME = 'GO_TO_HOME';
+const PRINT_STATE = 'PRINT_STATE';
 
 export const getPosts = () => ({ type: GET_POSTS });
 export const getPostById = id => ({ type: GET_POST_BY_ID, payload: { id }, meta: id });
 
 export const goToHome = () => ({ type: GO_TO_HOME });
+export const printState = () => ({ type: PRINT_STATE });
 
 function* getPostsSaga() {
   try {
@@ -41,10 +43,16 @@ function* goToHomeSaga() {
   history.push('/');
 }
 
+function* printStateSga() {
+  const state = yield select(state => state.posts);
+  console.log(state);
+}
+
 export function* postsSaga() {
   yield takeEvery(GET_POSTS, getPostsSaga);
   yield takeEvery(GET_POST_BY_ID, getPostByIdSaga);
   yield takeEvery(GO_TO_HOME, goToHomeSaga);
+  yield takeEvery(PRINT_STATE, printStateSga);
 }
 
 const initialState = {
